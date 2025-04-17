@@ -74,7 +74,7 @@ for i, sentiment in enumerate(sentiment_order, start=1):
     duration_scaled = max(duration_days / 15, 1.5)
 
     score_norm = (avg_score - score_min) / (score_max - score_min)
-    score_norm = max(0, min(score_norm, 1))  # ✅ fix negative/overflow
+    score_norm = max(0, min(score_norm, 1))
     circle_pixel_radius = min_size + score_norm * (max_size - min_size)
     circle_data_radius = (circle_pixel_radius / 2) * pixel_to_data_ratio
 

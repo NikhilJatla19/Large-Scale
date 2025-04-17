@@ -10,7 +10,7 @@ def load_data():
     return pd.read_excel("Webex_Traceability_Merged_Cleaned.xlsx")
 
 df = load_data()
-df['content'] = df['content'].astype(str)  # 🔧 Add this
+df['content'] = df['content'].astype(str)
 # Convert dates
 df['at'] = pd.to_datetime(df['at'], errors='coerce')
 df['Release Date'] = pd.to_datetime(df['Release Date'], errors='coerce')
@@ -41,7 +41,7 @@ filtered_df = df[
 if version_filter:
     filtered_df = filtered_df[filtered_df['Release Version'].isin(version_filter)]
 
-filtered_df['content'] = filtered_df['content'].astype(str)  # 🔧 Add this
+filtered_df['content'] = filtered_df['content'].astype(str)
 
 # Sentiment Analysis (basic scoring)
 def classify_sentiment(text):
