@@ -23,9 +23,9 @@ def load_data():
 
     def classify_sentiment(text):
         text = str(text).lower()
-        if any(word in text for word in ["good", "great", "excellent", "love", "happy", "nice"]):
+        if any(word in text for word in ["good", "great", "excellent", "love", "happy","nice","perfect", "clear", "easy", "Perfectoo"]):
             return "Positive"
-        elif any(word in text for word in ["bad", "terrible", "hate", "issue", "problem", "poor"]):
+        elif any(word in text for word in ["bad", "terrible", "hate", "issue", "problem", "poor", "worst"]):
             return "Negative"
         return "Neutral"
 
@@ -39,15 +39,15 @@ def version_key(v):
     nums = re.findall(r'\d+', str(v))
     return [int(n) for n in nums] if nums else [0]
 
-version_list = sorted(df['Release Version'].dropna().unique().tolist(), key=version_key)
+version_list = sorted(df['appVersion'].dropna().unique().tolist(), key=version_key)
 version_list.insert(0, "All Versions")
-selected_version = st.sidebar.selectbox("Choose Release Version", version_list)
+selected_version = st.sidebar.selectbox("Choose App Version", version_list)
 
 # Filter based on version
 if selected_version == "All Versions":
     version_df = df.copy()
 else:
-    version_df = df[df['Release Version'] == selected_version]
+    version_df = df[df['appVersion'] == selected_version]
 
 version_display = selected_version if selected_version != 'All Versions' else 'All Versions'
 
@@ -134,7 +134,17 @@ for i in range(1, 4):
 st.plotly_chart(fig, use_container_width=True)
 
 # Feature Descriptions
-feature_list = version_df['Feature Description'].dropna().unique().tolist()
+# Feature Descriptions
+# Feature Descriptions
+feature_raw = version_df['Feature Description'].dropna().tolist()
+
+# Split descriptions by "#" and flatten the list, deduplicate, and sort
+feature_set = set()
+for entry in feature_raw:
+    features = [desc.strip() for desc in entry.split('#') if desc.strip()]
+    feature_set.update(features)
+
+feature_list = sorted(feature_set)
 
 if feature_list:
     st.markdown("---")

@@ -28,9 +28,9 @@ def version_key(v):
         return []
     return [int(x) if x.isdigit() else x for x in re.split(r'(\d+)', str(v))]
 
-sorted_versions = sorted(df['Release Version'].dropna().unique(), key=version_key)
+sorted_versions = sorted(df['appVersion'].dropna().unique(), key=version_key)
 
-version_filter = st.sidebar.multiselect("Filter by Release Version", sorted_versions)
+version_filter = st.sidebar.multiselect("Filter by appVersion", sorted_versions)
 
 
 filtered_df = df[
@@ -39,16 +39,16 @@ filtered_df = df[
 ]
 
 if version_filter:
-    filtered_df = filtered_df[filtered_df['Release Version'].isin(version_filter)]
+    filtered_df = filtered_df[filtered_df['appVersion'].isin(version_filter)]
 
 filtered_df['content'] = filtered_df['content'].astype(str)
 
 # Sentiment Analysis (basic scoring)
 def classify_sentiment(text):
     text = str(text).lower()
-    if any(word in text for word in ["good", "great", "excellent", "love", "happy","nice"]):
+    if any(word in text for word in ["good", "great", "excellent", "love", "happy","nice","perfect", "clear", "easy", "Perfectoo"]):
         return "Positive"
-    elif any(word in text for word in ["bad", "terrible", "hate", "issue", "problem", "poor"]):
+    elif any(word in text for word in ["bad", "terrible", "hate", "issue", "problem", "poor", "worst"]):
         return "Negative"
     else:
         return "Neutral"
@@ -90,7 +90,7 @@ heatmap_data = filtered_df.copy()
 heatmap_data['Month'] = heatmap_data['at'].dt.to_period('M').astype(str)
 heatmap_pivot = (
     heatmap_data
-    .groupby(['Release Version', 'Month'])
+    .groupby(['appVersion', 'Month'])
     .agg(avg_score=('score', 'mean'), review_count=('content', 'count'))
     .reset_index()
 )
@@ -99,7 +99,7 @@ heatmap_pivot = (
 fig4 = px.density_heatmap(
     heatmap_pivot, 
     x="Month", 
-    y="Release Version", 
+    y="appVersion", 
     z="avg_score",
     color_continuous_scale="RdYlGn", 
     hover_data=["review_count"],
@@ -113,14 +113,14 @@ heatmap_data['Month'] = heatmap_data['at'].dt.to_period('M').astype(str)
 heatmap_data['Sentiment'] = heatmap_data['content'].apply(classify_sentiment)
 
 sentiment_pivot = (
-    heatmap_data.groupby(['Release Version', 'Month', 'Sentiment'])
+    heatmap_data.groupby(['appVersion', 'Month', 'Sentiment'])
     .size()
     .reset_index(name='count')
 )
 
 fig5 = px.sunburst(
     sentiment_pivot,
-    path=["Release Version", "Month", "Sentiment"],
+    path=["appVersion", "Month", "Sentiment"],
     values="count",
     color="count",
     color_continuous_scale="RdBu",
@@ -133,7 +133,7 @@ st.subheader("📅 Gantt Chart: Feature Relevance Timeline")
 
 # Prepare Gantt data
 gantt_df = (
-    filtered_df.groupby("Release Version")
+    filtered_df.groupby("appVersion")
     .agg(
         Start=('Release Date', 'min'),
         End=('at', 'max'),
@@ -148,7 +148,7 @@ gantt_df = gantt_df.sort_values("Start").head(20)
 
 # Format for Gantt
 gantt_data = [
-    dict(Task=row['Release Version'],
+    dict(Task=row['appVersion'],
          Start=str(row['Start']),
          Finish=str(row['End']),
          Resource=row['Description'][:40] + '...',
